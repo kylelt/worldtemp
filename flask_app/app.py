@@ -12,3 +12,4 @@ def hello_world():
 @app.route('/country/<city>')
 def get_country_of_city(city):
     return countryMapping.get_latlon(city)
+

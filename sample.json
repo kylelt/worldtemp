@@ -1,0 +1,15 @@
+{
+"countries": [{
+		"country": "Spain",
+		"averageSentiment": 1.0
+	},
+	{
+		"country": "Australia",
+		"averageSentiment": -1.0
+	},
+	{
+		"country": "New Zealand",
+		"averageSentiment": 0.0
+	}
+]
+}
