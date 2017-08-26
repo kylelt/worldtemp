@@ -9,12 +9,18 @@ def getCountryStats(countryName):
     countryData = redis_db.hgetall(countryName)
 
     if countryData == {}:
-        raise KeyError('Country named \'' + countryName + '\' does not exist')
+        raise KeyError('Country named \'' + countryName + \
+        '\' does not exist')
     else:
         # Convert from byte literal to unicode
         response = {k.decode('utf-8'): v.decode('utf-8') \
                 for k, v in countryData.items()}
-        return response;
+        return response
+
+def getCountrySentiment(countryName):
+    country = getCountryStats(countryName)
+    avgSentiment = float(country['sentiment']) / int(country['count'])
+    return avgSentiment
     
 
 def setCountryStats(countryName, sentiment):
@@ -36,11 +42,13 @@ def setCountryStats(countryName, sentiment):
         newCountryData['count'] = int(newCountryData['count']) + 1
 
         # Average the sentiment
-        newCountryData['sentiment'] = (float(newCountryData['sentiment']) \
-         + sentiment) / 2
+        newCountryData['sentiment'] = \
+        (float(newCountryData['sentiment']) \
+         + sentiment)
         
     # Set the new value
     redis_db.hmset(countryName, newCountryData);
 
 # setCountryStats("United States", -0.6)
-print(getCountryStats("Unisted States"))
+# print(getCountryStats("Unisted States"))
+print(getCountrySentiment("United States"))
