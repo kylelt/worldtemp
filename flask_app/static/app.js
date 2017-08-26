@@ -45,20 +45,72 @@ function leave(country) {
 
 
 
-function colour_country(countryName){
-  var country = countryList.find(function(c){
-    return c.name === countryName
-  })
-  //console.log(countryId.id)
-  var feature = countries.features.find(function(f){return parseInt(f.id) === parseInt(country.id)})
+function color_single_country(countryName, color){
 
-  console.log(feature)
-  //countryList['colour'] = 
-  fill(feature, colorCountry)
+  countryList.forEach(function(countryObj) {
+    if (countryObj.name === countryName) {
+      countryObj.color = colorCountry;
+      break
+    }
+  });
+
+}
+
+/**
+ * Converts an HSV color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes h, s, and v are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  v       The value
+ * @return  Array           The RGB representation
+ */
+function hsvToRgb(h, s, v){
+    var r, g, b;
+
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+
+    switch(i % 6){
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+
+    return [r * 255, g * 255, b * 255];
+}
+
+function processSensitivity(sensitivity){
+  //Sensitivity will be between -1 and 1
+
+
+}
+
+function color_all_countries(twitter_out){
+  //Process twitter feed
+  twitter_out.forEach(function(twit_obj){
+    //Find country in countryList
+    countryList.forEach(function(countryObj){
+      if (countryObj.name === twit_obj.name) {
+        countryObj.color = processSensitivity(twit_obj.sensitivity);
+      }
+    });
+
+  })
+
+
 }
 
 setInterval(function() {
-    colour_country("Australia")
+    color_single_country("Australia",colorCountry)
     console.log("Australia")
 }, 60 * 100); // 60 * 1000 milsec
 
@@ -81,7 +133,7 @@ var lastTime = d3.now()
 var degPerMs = degPerSec / 1000
 var width, height
 var land, countries
-var countryList
+var countryList = []
 var autorotate, now, diff, roation
 var currentCountry
 
@@ -139,9 +191,17 @@ function render() {
   fill(water, colorWater)
   stroke(graticule, colorGraticule)
   fill(land, colorLand)
-  if (currentCountry) {
-    fill(currentCountry, colorCountry)
-  }
+
+  countryList.forEach(function(countryObj) {
+    if (countryObj.color === '#000000') {
+      
+    }else{
+      fill(countryObj.feature, countryObj.color)
+    }
+  });
+  // if (currentCountry) {
+  //   fill(currentCountry, colorCountry)
+  // }
 }
 
 function fill(obj, color) {
@@ -197,7 +257,7 @@ function polygonContains(polygon, point) {
 }
 
 function mousemove() {
-  //hange_country_colour();
+  //hange_country_color();
 
   var c = getCountry(this)
   // console.log(this)
@@ -258,7 +318,17 @@ canvas
 loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)
   countries = topojson.feature(world, world.objects.countries)
-  countryList = cList
+
+  // Populate country list
+  cList.forEach(function(obj) { 
+    // console.log(obj.id)
+    countryList.push({name: obj.name,
+                      id: obj.id, 
+                      color: '#000000',
+                      feature: countries.features.find(function(f){return parseInt(f.id) === parseInt(obj.id)})
+                    });
+  });
+
   
   window.addEventListener('resize', scale)
   scale()
