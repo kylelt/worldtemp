@@ -4,19 +4,24 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mystyle.css') }}">
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Baloo+Bhaijaan" rel="stylesheet">
+
 <!-- <script src="https://github.com/Automattic/Color.js"></script> -->
 
-<title>Page Title</title>
+<title>World Temperature</title>
 </head>
 <body>
 
-<h1>This is a Heading</h1>
-<h2 id="current"></h2>
-<canvas id="globe"></canvas>
+<h1>EarthTemp</h1>
 
+<!-- <h1>World Temperature</h1> -->
+<h2 id="current"></h2>
+<!-- <h3 id="tweetprop"></h3> -->
+<canvas id="globe"></canvas>
 <p></p>
 
 </body>
 <script type="text/javascript" src="{{ url_for('static', filename='versor.js') }}"> </script>
+<script type="text/javascript" src="{{ url_for('static', filename='tinycolor.js') }}"> </script>
 <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 </html>

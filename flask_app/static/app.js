@@ -49,7 +49,6 @@ function enter(country) {
   // })
   // //console.log(countryId.id)
   // var feature = countries.features.find(function(f){return parseInt(f.id) === parseInt(countryId.id)})
-
   // console.log(feature)
   // fill(feature, colorCountry)
 
@@ -148,7 +147,8 @@ function processSensitivity(sensitivity){
   console.log(sensitivity);
   // var HSV = [toInteger(sensitivity * 360), 100, 100]
   // return Color().fromHsv(HSV)
-  return getColorForPercentage(sensitivity) 
+  // return getColorForPercentage(sensitivity) 
+  return hsvToRgb(sensitivity, 0.8, 1);
 }
 
 // var twitter_out = 
@@ -214,8 +214,8 @@ function color_all_countries(twitter_out){
       if (countryObj.name === twit_obj.country) {
         console.log(countryObj)
         var country_rgb = processSensitivity(twit_obj.averageSentiment);
-        countryObj.color =  processSensitivity(twit_obj.averageSentiment);
-        // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
+        // countryObj.color =  processSensitivity(twit_obj.averageSentiment);
+        countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
         // countryObj.color = processSensitivity(twit_obj.averageSentiment);
       }
     });
@@ -233,7 +233,7 @@ setInterval(function() {
 // Variables
 //
 
-var current = d3.select('#current')
+var current = d3.select('#current') 
 var canvas = d3.select('#globe')
 var context = canvas.node().getContext('2d')
 var water = {type: 'Sphere'}
@@ -313,11 +313,19 @@ function render() {
       fill(countryObj.feature, countryObj.color)
     }
   });
-  // if (currentCountry) {
-  //   fill(currentCountry, colorCountry)
-  // }
+
+
+  if (currentCountry) {
+    fill(currentCountry, colorCountry)
+  }
 }
 
+function changeOpacity(obj){
+  // context.beginPath()
+  // path(obj)
+  // context.style.opacity = 0.15
+  // element.style.filter  = 'alpha(opacity=90)';
+}
 function fill(obj, color) {
   context.beginPath()
   path(obj)
@@ -391,7 +399,7 @@ function mousemove() {
   currentCountry = c
   console.log(currentCountry)
   // console.log("bals")
-  
+  changeOpacity(currentCountry);
   render()
   enter(c)
 }
@@ -427,7 +435,7 @@ canvas
     .on('drag', dragged)
     .on('end', dragended)
    )
-//  .on('mousemove', mousemove)
+ .on('mousemove', mousemove)
 
 loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)

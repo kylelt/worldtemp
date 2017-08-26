@@ -1,7 +1,13 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #555;
+  background: #0a0f44;
+}
+h1{
+	position: absolute;
+  	color: white;
+	font-family: 'Baloo Bhaijaan';
+	margin-left: 4%;
 }
 
 #globe {
@@ -15,3 +21,12 @@ html, body {
   margin-left: 4%;
   margin-top: 4%;
 }
+
+#tweetprop {
+  position: absolute;
+  color: white;
+  font-family: sans-serif;
+  margin-left: 4%;
+  margin-top: 4%;
+}
+
