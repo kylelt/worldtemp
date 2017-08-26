@@ -11,9 +11,9 @@ var degPerSec = 6
 // start angles
 var angles = { x: -20, y: 40, z: 0}
 // colors
-var colorWater = '#8CFFF8'
+var colorWater = '#FFFFFF'
 var colorLand = '#111'
-var colorGraticule = '#8CFFF8'
+var colorGraticule = '#FFFFFF'
 var colorCountry = '#ffff00' //Yellow
 // var PosCountry
 // var NegCountry 
@@ -21,6 +21,23 @@ var colorCountry = '#ffff00' //Yellow
 //
 // Handler
 //
+
+var rgbToHex = function (rgb) { 
+  var hex = Number(rgb).toString(16);
+  if (hex.length < 2) {
+       hex = "0" + hex;
+  }
+  return hex;
+};
+
+
+var fullColorHex = function(r,g,b) {   
+  var red = rgbToHex(r);
+  var green = rgbToHex(g);
+  var blue = rgbToHex(b);
+  return red+green+blue;
+};
+
 
 function enter(country) {
   var country = countryList.find(function(c) {
@@ -56,6 +73,12 @@ function color_single_country(countryName, color){
 
 }
 
+function toInteger(number){ 
+  return Math.round(  // round to nearest integer
+    Number(number)    // type cast your input
+  ); 
+};
+
 /**
  * Converts an HSV color value to RGB. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
@@ -88,30 +111,121 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
+
+var percentColors = [
+    { pct: 0.0, color: { r: 0xff, g: 0x00, b: 0 } },
+    { pct: 0.5, color: { r: 0xff, g: 0xff, b: 0 } },
+    { pct: 1.0, color: { r: 0x00, g: 0xff, b: 0 } } ];
+
+var getColorForPercentage = function(pct) {
+    for (var i = 1; i < percentColors.length - 1; i++) {
+        if (pct < percentColors[i].pct) {
+            break;
+        }
+    }
+    var lower = percentColors[i - 1];
+    var upper = percentColors[i];
+    var range = upper.pct - lower.pct;
+    var rangePct = (pct - lower.pct) / range;
+    var pctLower = 1 - rangePct;
+    var pctUpper = rangePct;
+    var color = {
+        r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+        g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+        b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+    };
+    return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
+    // or output as hex if preferred
+}  
+
+
+
 function processSensitivity(sensitivity){
   //Sensitivity will be between -1 and 1
+  //Convert sensitivity to scale between 0 and 1
+  sensitivity = ((sensitivity + 1)/2)
 
+  console.log(sensitivity);
+  // var HSV = [toInteger(sensitivity * 360), 100, 100]
+  // return Color().fromHsv(HSV)
+  return getColorForPercentage(sensitivity) 
+}
 
+// var twitter_out = 
+// { "data" : [
+//   { "name" : "Australia",
+//     "sensitivity" : 0.56
+//   },
+//   { "name" : "United States",
+//     "sensitivity" : 1
+//   },
+//   { "name" : "Honduras",
+//     "sensitivity" : -0.56
+//   },
+//   { "name" : "Congo",
+//     "sensitivity" : 0.36
+//   },
+//   { "name" : "Sri Lanka",
+//     "sensitivity" : 0
+//   },
+//   { "name" : "United Kingdom",
+//     "sensitivity" : 0.26
+//   },
+// ]
+// }
+
+var twitter_out = {
+"countries": [{
+    "country": "Spain",
+    "averageSentiment": 1.0
+  },
+  {
+    "country": "Australia",
+    "averageSentiment": -1.0
+  },
+  {
+    "country": "New Zealand",
+    "averageSentiment": 0.0
+  },
+  { "country" : "United States",
+    "averageSentiment" : 1
+  },
+  { "country" : "Honduras",
+    "averageSentiment" : -0.56
+  },
+  { "country" : "Congo",
+    "averageSentiment" : 0.36
+  },
+  { "country" : "Sri Lanka",
+    "averageSentiment" : 0
+  },
+  { "country" : "United Kingdom",
+    "averageSentiment" : 0.26
+  },
+]
 }
 
 function color_all_countries(twitter_out){
   //Process twitter feed
   twitter_out.forEach(function(twit_obj){
+     console.log(twit_obj)
     //Find country in countryList
     countryList.forEach(function(countryObj){
-      if (countryObj.name === twit_obj.name) {
-        countryObj.color = processSensitivity(twit_obj.sensitivity);
+      if (countryObj.name === twit_obj.country) {
+        console.log(countryObj)
+        var country_rgb = processSensitivity(twit_obj.averageSentiment);
+        countryObj.color =  processSensitivity(twit_obj.averageSentiment);
+        // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
+        // countryObj.color = processSensitivity(twit_obj.averageSentiment);
       }
     });
 
   })
-
-
 }
 
 setInterval(function() {
-    color_single_country("Australia",colorCountry)
-    console.log("Australia")
+    color_all_countries(twitter_out.countries)
+    //console.log("Australia")
 }, 60 * 100); // 60 * 1000 milsec
 
 
@@ -329,7 +443,7 @@ loadData(function(world, cList) {
                     });
   });
 
-  
+  color_all_countries(twitter_out.countries)
   window.addEventListener('resize', scale)
   scale()
   autorotate = d3.timer(rotate)
