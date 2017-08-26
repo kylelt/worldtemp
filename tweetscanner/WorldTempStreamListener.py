@@ -31,13 +31,14 @@ class WorldTempStreamListener(StreamListener):
 				retweeted = decodedData['retweeted']
 				
 				# Tweets without location are ignored as we cannot track the user to a specific geo location
-				if (decodedData['user'] != None and retweeted == False):
-					user_location = decodedData['user']['location']
-					
+				if (decodedData['user'] != None and retweeted == False and decodedData['user']['location'] != None):
+					userLocation = decodedData['user']['location']
+					postPlace = decodedData['place']['country']
+
 					# Convert UTF-8 to ASCII to ignore the bad characters sent by users
 					tweet_text = decodedData['text'].encode('ascii', 'ignore').decode('utf-8')
 
-					print('Processed: %s\nActual: %s\nLocation: %s\n' % (processTweetText(tweet_text), tweet_text, user_location))
+					print('Processed: %s\nActual: %s\nLocation: %s\nTweet location: %s\n' % (processTweetText(tweet_text), tweet_text, userLocation, postPlace))
 
 		except KeyError:
 			pass

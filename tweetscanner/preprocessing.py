@@ -24,10 +24,10 @@ def processTweetText(tweet_text):
 
 	# Sentiment Analysis
 	vs = analyzer.polarity_scores(lowerCase)['compound']
-
-	if vs > 0:
+	thresh = 0.2
+	if vs > thresh:
 		sentiment = "Positive"
-	elif vs < 0:
+	elif vs < -thresh:
 		sentiment = "Negative"
 	else:
 		sentiment = "Neutral"
