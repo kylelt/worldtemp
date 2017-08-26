@@ -26,6 +26,16 @@ function enter(country) {
   var country = countryList.find(function(c) {
     return c.id === country.id
   })
+
+  // var countryId = countryList.find(function(c){
+  //   return c.name === "Australia"
+  // })
+  // //console.log(countryId.id)
+  // var feature = countries.features.find(function(f){return parseInt(f.id) === parseInt(countryId.id)})
+
+  // console.log(feature)
+  // fill(feature, colorCountry)
+
   current.text(country && country.name || '')
 }
 
@@ -34,6 +44,23 @@ function leave(country) {
 }
 
 
+
+function colour_country(countryName){
+  var country = countryList.find(function(c){
+    return c.name === countryName
+  })
+  //console.log(countryId.id)
+  var feature = countries.features.find(function(f){return parseInt(f.id) === parseInt(country.id)})
+
+  console.log(feature)
+  //countryList['colour'] = 
+  fill(feature, colorCountry)
+}
+
+setInterval(function() {
+    colour_country("Australia")
+    console.log("Australia")
+}, 60 * 100); // 60 * 1000 milsec
 
 
 //
@@ -170,7 +197,11 @@ function polygonContains(polygon, point) {
 }
 
 function mousemove() {
+  //hange_country_colour();
+
   var c = getCountry(this)
+  // console.log(this)
+  // console.log(c)
   if (!c) {
     if (currentCountry) {
       leave(currentCountry)
@@ -182,7 +213,11 @@ function mousemove() {
   if (c === currentCountry) {
     return
   }
+ // console.log(currentCountry)
   currentCountry = c
+  console.log(currentCountry)
+  // console.log("bals")
+  
   render()
   enter(c)
 }
@@ -204,6 +239,8 @@ function getCountry(event) {
 }
 
 
+
+
 //
 // Initialization
 //
@@ -216,7 +253,7 @@ canvas
     .on('drag', dragged)
     .on('end', dragended)
    )
-  .on('mousemove', mousemove)
+//  .on('mousemove', mousemove)
 
 loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)
