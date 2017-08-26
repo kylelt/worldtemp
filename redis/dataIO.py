@@ -1,4 +1,5 @@
 import redis
+import json
 
 POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
@@ -25,6 +26,21 @@ def getCountrySentiment(countryName):
     avgSentiment = float(country['sentiment']) / int(country['count'])
     return avgSentiment
 
+def getAllCountryObjectsJSON():
+    redis_db = redis.Redis(connection_pool=POOL)
+
+    allCountries = []
+
+    # Iterate over all countries
+    for country in redis_db.scan_iter("*"):
+        # do something with the key
+        countryName = country.decode('utf-8')
+        avgSentiment = getCountrySentiment(countryName)
+        allCountries.append({ 'name': countryName, \
+                            'avgSentiment': avgSentiment})
+
+    return json.dumps(allCountries)
+
     
 def setCountryStats(countryName, sentiment):
     redis_db = redis.Redis(connection_pool=POOL)
@@ -49,8 +65,4 @@ def setCountryStats(countryName, sentiment):
          + sentiment)
         
     # Set the new value
-    redis_db.hmset(countryName, newCountryData);
-
-# setCountryStats("United States", -0.6)
-# print(getCountryStats("United States"))
-# print(getCountrySentiment("United States"))
+    redis_db.hmset(countryName, newCountryData)
