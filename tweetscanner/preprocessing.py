@@ -1,43 +1,73 @@
 import re
+import queue
 from fileio import writeCSVFile
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
+import asyncio
+import time
 # File contains helper functions for the processing of tweet text
 
-analyzer = SentimentIntensityAnalyzer()
 
-def processTweetText(tweet_text):
-	""" Processes the tweet text
+class TweetProcessor(Thread):
+    """
+    :param in_queue the queue in which the tweets will appear
+    :param control_queue the queue in which any sentinal messages will come through
+    :param sleep_time how long should i sleep between iterations
+    """
+    def __init__(self, in_queue: queue.Queue, control_queue: queue.Queue, sleep_time: int):
+        self.in_queue = in_queue
+        self.control_queue = control_queue
+        self.sleep_time = sleep_time
+        
+        self.analyzer = SentimentIntensityAnalyzer()
+    
+    def run(self):
+        while True:
+            try:
+                if(self.control_queue.get_nowait() == "stop"):
+                    return
+            except asyncio.QueueEmpty:
+                val = self.in_queue.get(timeout=30)
+                self.processTweetText(self, val)
+                time.sleep(self.sleep_time)     
 
-	"""
-	# Removes reply, email, hashtags and newline segments
-	filtered = removeNoise(tweet_text)
+    def processTweetText(self, tweet):
+        """ Processes the tweet """
+        try:
+            # Dump any tweets that don't have the fields we want because we cannot
+            # classify those tweets
 
-	# Correct Spacing
-	correctedSpacing = correctSpacing(filtered)
+            if decodedData['text']:
+                retweeted = tweet['retweeted']
+                
+                if(tweet['user'] != None and retweeted = False && ):
+                    user_location = tweet['place']['country']
+                    tweet_text = tweet['text'].encode('ascii', 'ignore').decode('utf-8')
 
-	# Convert all letters to lower case
-	lowerCase = correctedSpacing.lower()
+	            # Removes reply, email, hashtags and newline segments
+	            filtered = self.removeNoise(tweet_text)
+                     
 
-	# Write to file for data collection to a csv
-	# writeCSVFile(textToTokens(processed))
+	            # Correct Spacing
+	            correctedSpacing = self.correctSpacing(filtered)
 
-	# Sentiment Analysis
-	vs = analyzer.polarity_scores(lowerCase)['compound']
-
-	if vs > 0:
-		sentiment = "Positive"
-	elif vs < 0:
-		sentiment = "Negative"
-	else:
-		sentiment = "Neutral"
-
-	filteredSentenceWithSentiment = lowerCase + ' ' + str(sentiment)
-
-	return filteredSentenceWithSentiment
+	            # Convert all letters to lower case
+	            lowerCase = correctedSpacing.lower()
 
 
-def removeNoise(tweet_text):
+	            # Sentiment Analysis
+	            vs = self.analyzer.polarity_scores(lowerCase)['compound']
+                    print("update to kv store: %s" % json.dumps({"country": user_location, "sentiment": vs})
+                    self.update_kv_store(user_location, vs)
+
+                    # Write to store
+        except KeyError:
+            pass
+
+
+    def update_kv_store(self, country: str, sentiment_value: float):
+        print("update kv store %s %f" % (country, sentiment_value)
+    
+    def removeNoise(self, tweet_text):
 	""" Removes reply, weblinks, hashtags and newline segments
 
 	"""
@@ -65,14 +95,14 @@ def removeNoise(tweet_text):
 	return final_string
 
 
-def correctSpacing(tweet_text):
+    def correctSpacing(self, tweet_text):
 	""" Removes multiple spaces and replaces it with a single space
 
 	"""
 	words = [word.strip() for word in tweet_text.split()]
 	return ' '.join(words)
 
-def textToTokens(tweet_text):
+    def textToTokens(self, tweet_text):
 	""" Converts a tweet to a list of words seperated by a single space
 
 	"""
