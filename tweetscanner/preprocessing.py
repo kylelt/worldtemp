@@ -1,25 +1,40 @@
 import re
 from fileio import writeCSVFile
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 # File contains helper functions for the processing of tweet text
+
+analyzer = SentimentIntensityAnalyzer()
 
 def processTweetText(tweet_text):
 	""" Processes the tweet text
 
 	"""
 	# Removes reply, email, hashtags and newline segments
-	stage_one = removeNoise(tweet_text)
+	filtered = removeNoise(tweet_text)
 
 	# Correct Spacing
-	processed = correctSpacing(stage_one)
+	correctedSpacing = correctSpacing(filtered)
 
 	# Convert all letters to lower case
-	processed = processed.lower()
+	lowerCase = correctedSpacing.lower()
 
 	# Write to file for data collection to a csv
-	writeCSVFile(textToTokens(processed))
+	# writeCSVFile(textToTokens(processed))
 
-	return processed
+	# Sentiment Analysis
+	vs = analyzer.polarity_scores(lowerCase)['compound']
+
+	if vs > 0:
+		sentiment = "Positive"
+	elif vs < 0:
+		sentiment = "Negative"
+	else:
+		sentiment = "Neutral"
+
+	filteredSentenceWithSentiment = lowerCase + ' ' + str(sentiment)
+
+	return filteredSentenceWithSentiment
 
 
 def removeNoise(tweet_text):
