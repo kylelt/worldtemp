@@ -11,9 +11,9 @@ var degPerSec = 6
 // start angles
 var angles = { x: -20, y: 40, z: 0}
 // colors
-var colorWater = '#FFFFFF'
-var colorLand = '#111'
-var colorGraticule = '#FFFFFF'
+var colorWater = '#0081C6'
+var colorLand = '#D3D3D3'
+var colorGraticule = '#0081C6'
 var colorCountry = '#ffff00' //Yellow
 // var PosCountry
 // var NegCountry 
@@ -144,11 +144,11 @@ function processSensitivity(sensitivity){
   //Convert sensitivity to scale between 0 and 1
   sensitivity = ((sensitivity + 1)/2)
 
-  console.log(sensitivity);
+  // console.log(sensitivity);
   // var HSV = [toInteger(sensitivity * 360), 100, 100]
   // return Color().fromHsv(HSV)
-  // return getColorForPercentage(sensitivity) 
-  return hsvToRgb(sensitivity, 0.8, 1);
+  return getColorForPercentage(sensitivity) 
+  // return hsvToRgb(sensitivity, 0.8, 1);
 }
 
 // var twitter_out = 
@@ -202,21 +202,28 @@ var twitter_out = {
   { "country" : "United Kingdom",
     "averageSentiment" : 0.26
   },
+  { "country" : "Iran",
+    "averageSentiment" : -0.22
+  },
+  { "country" : "Brazil",
+    "averageSentiment" : 0.36
+  },
+
 ]
 }
 
 function color_all_countries(twitter_out){
   //Process twitter feed
   twitter_out.forEach(function(twit_obj){
-     console.log(twit_obj)
+     // console.log(twit_obj)
     //Find country in countryList
     countryList.forEach(function(countryObj){
       if (countryObj.name === twit_obj.country) {
-        console.log(countryObj)
+        // console.log(countryObj)
         var country_rgb = processSensitivity(twit_obj.averageSentiment);
         // countryObj.color =  processSensitivity(twit_obj.averageSentiment);
-        countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
-        // countryObj.color = processSensitivity(twit_obj.averageSentiment);
+        // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
+        countryObj.color = processSensitivity(twit_obj.averageSentiment);
       }
     });
 
@@ -224,7 +231,9 @@ function color_all_countries(twitter_out){
 }
 
 setInterval(function() {
-    color_all_countries(twitter_out.countries)
+    // color_all_countries(twitter_out.countries)
+    $.getJSON( "/country", function( data ) {
+    });
     //console.log("Australia")
 }, 60 * 100); // 60 * 1000 milsec
 
@@ -397,7 +406,7 @@ function mousemove() {
   }
  // console.log(currentCountry)
   currentCountry = c
-  console.log(currentCountry)
+  // console.log(currentCountry)
   // console.log("bals")
   changeOpacity(currentCountry);
   render()
