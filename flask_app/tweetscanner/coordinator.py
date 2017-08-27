@@ -2,7 +2,7 @@ from threading import Thread
 import threading
 from preprocessing import TweetProcessor
 import logging
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, active_children
 
 class TweetCoordinator:
     def __init__(self, queue_len=10000, worker_threads=4, worker_sleep_time_sec=0.1):
@@ -21,7 +21,7 @@ class TweetCoordinator:
             self.stop_work()
 
     def show_thread_count(self):
-        print(multiprocessing.active_count())
+        print(active_children())
 
     def start_work(self):
         print("starting workers")
