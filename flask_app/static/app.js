@@ -11,9 +11,9 @@ var degPerSec = 6
 // start angles
 var angles = { x: -20, y: 40, z: 0}
 // colors
-var colorWater = '#FFFFFF'
-var colorLand = '#111'
-var colorGraticule = '#FFFFFF'
+var colorWater = '#0081C6'
+var colorLand = '#D3D3D3'
+var colorGraticule = '#0081C6'
 var colorCountry = '#ffff00' //Yellow
 // var PosCountry
 // var NegCountry 
@@ -49,15 +49,19 @@ function enter(country) {
   // })
   // //console.log(countryId.id)
   // var feature = countries.features.find(function(f){return parseInt(f.id) === parseInt(countryId.id)})
-
   // console.log(feature)
   // fill(feature, colorCountry)
 
   current.text(country && country.name || '')
+  // console.log(country)
+  sentiment_h.text(country.sentiment)
+  tweets_h.text(country.tweetCount + " tweets" );
 }
 
 function leave(country) {
   current.text('')
+  sentiment_h.text('')
+  tweets_h.text('')
 }
 
 
@@ -67,7 +71,7 @@ function color_single_country(countryName, color){
   countryList.forEach(function(countryObj) {
     if (countryObj.name === countryName) {
       countryObj.color = colorCountry;
-      break
+     // break
     }
   });
 
@@ -145,10 +149,11 @@ function processSensitivity(sensitivity){
   //Convert sensitivity to scale between 0 and 1
   sensitivity = ((sensitivity + 1)/2)
 
-  console.log(sensitivity);
+  // console.log(sensitivity);
   // var HSV = [toInteger(sensitivity * 360), 100, 100]
   // return Color().fromHsv(HSV)
   return getColorForPercentage(sensitivity) 
+  // return hsvToRgb(sensitivity, 0.8, 1);
 }
 
 // var twitter_out = 
@@ -174,8 +179,7 @@ function processSensitivity(sensitivity){
 // ]
 // }
 
-var twitter_out = {
-"countries": [{
+var twitter_out1 = [{
     "country": "Spain",
     "averageSentiment": 1.0
   },
@@ -202,21 +206,29 @@ var twitter_out = {
   { "country" : "United Kingdom",
     "averageSentiment" : 0.26
   },
+  { "country" : "Iran",
+    "averageSentiment" : -0.22
+  },
+  { "country" : "Brazil",
+    "averageSentiment" : 0.36
+  }
 ]
-}
+
 
 function color_all_countries(twitter_out){
   //Process twitter feed
   twitter_out.forEach(function(twit_obj){
-     console.log(twit_obj)
+     // console.log(twit_obj)
     //Find country in countryList
     countryList.forEach(function(countryObj){
       if (countryObj.name === twit_obj.country) {
-        console.log(countryObj)
+        // console.log(countryObj)
         var country_rgb = processSensitivity(twit_obj.averageSentiment);
-        countryObj.color =  processSensitivity(twit_obj.averageSentiment);
+        // countryObj.color =  processSensitivity(twit_obj.averageSentiment);
         // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
-        // countryObj.color = processSensitivity(twit_obj.averageSentiment);
+        countryObj.sentiment = (twit_obj.averageSentiment).toFixed(4);
+        countryObj.tweetCount = twit_obj.count;
+        countryObj.color = processSensitivity(twit_obj.averageSentiment);
       }
     });
 
@@ -224,7 +236,37 @@ function color_all_countries(twitter_out){
 }
 
 setInterval(function() {
-    color_all_countries(twitter_out.countries)
+    // $.ajax( "/countries", function( data ) {
+    //   console.log(data);
+    // });
+
+    // Assign handlers immediately after making the request,
+// and remember the jqXHR object for this request
+$.ajax({
+  url: '/countries',
+  type: 'GET'
+}).done(function(data){
+
+color_all_countries(JSON.parse(data))
+
+
+// if (events.length != 0) {
+//   renderEvents(events, callback);
+//   var lastEventISOString= events[events.length-1].start_time;
+//   lastEventTimeArr = getTimeArray(lastEventISOString);
+// }
+
+});
+    // .always(function() {
+    //   alert( "complete" );
+    // });
+
+    // Perform other work here ...
+
+    // // Set another completion function for the request above
+    // jqxhr.always(function() {
+    // alert( "second complete" );
+    // });
     //console.log("Australia")
 }, 60 * 100); // 60 * 1000 milsec
 
@@ -234,6 +276,8 @@ setInterval(function() {
 //
 
 var current = d3.select('#current')
+var sentiment_h = d3.select('#sentiment_h')
+var tweets_h = d3.select('#tweets_h')
 var canvas = d3.select('#globe')
 var context = canvas.node().getContext('2d')
 var water = {type: 'Sphere'}
@@ -313,11 +357,19 @@ function render() {
       fill(countryObj.feature, countryObj.color)
     }
   });
-  // if (currentCountry) {
-  //   fill(currentCountry, colorCountry)
-  // }
+
+
+  if (currentCountry) {
+    fill(currentCountry, colorCountry)
+  }
 }
 
+function changeOpacity(obj){
+  // context.beginPath()
+  // path(obj)
+  // context.style.opacity = 0.15
+  // element.style.filter  = 'alpha(opacity=90)';
+}
 function fill(obj, color) {
   context.beginPath()
   path(obj)
@@ -389,9 +441,9 @@ function mousemove() {
   }
  // console.log(currentCountry)
   currentCountry = c
-  console.log(currentCountry)
+  // console.log(currentCountry)
   // console.log("bals")
-  
+  changeOpacity(currentCountry);
   render()
   enter(c)
 }
@@ -427,7 +479,7 @@ canvas
     .on('drag', dragged)
     .on('end', dragended)
    )
-//  .on('mousemove', mousemove)
+ .on('mousemove', mousemove)
 
 loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)
@@ -439,11 +491,13 @@ loadData(function(world, cList) {
     countryList.push({name: obj.name,
                       id: obj.id, 
                       color: '#000000',
-                      feature: countries.features.find(function(f){return parseInt(f.id) === parseInt(obj.id)})
+                      feature: countries.features.find(function(f){return parseInt(f.id) === parseInt(obj.id)}),
+                      tweetCount: 0,
+                      sentiment: 'N/A'
                     });
   });
 
-  color_all_countries(twitter_out.countries)
+  // color_all_countries(twitter_out1)
   window.addEventListener('resize', scale)
   scale()
   autorotate = d3.timer(rotate)
