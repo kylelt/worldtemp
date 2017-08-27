@@ -2,6 +2,8 @@
 Current Sentiment of the World Displayed By Region on a lovely D3.js spinning globe, made for the 2017 UQCS
 winter hackathon.
 
+---
+
 ## Dependencies
    - python3
       - tweepy
@@ -11,6 +13,7 @@ winter hackathon.
    - redis
 
 ---
+
 ## Clone and Use or Develop
 
    1. Clone Repo: `git clone https://github.com/kylelt/worldtemp.git`
