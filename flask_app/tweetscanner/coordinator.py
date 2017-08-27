@@ -21,7 +21,7 @@ class TweetCoordinator:
             self.stop_work()
 
     def show_thread_count(self):
-        print(threading.active_count())
+        print(multiprocessing.active_count())
 
     def start_work(self):
         print("starting workers")

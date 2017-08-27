@@ -57,9 +57,7 @@ class TweetProcessor(Process):
 	                # Sentiment Analysis
                     vs = self.analyzer.polarity_scores(lowerCase)['compound']
                     self.update_kv_store(tweet_location, vs)
-
-                    # Write to store
-        except KeyError:
+        except KeyError, TypeError:
             pass
         except:
             raise
