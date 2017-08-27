@@ -15,28 +15,7 @@ var colorWater = '#0081C6'
 var colorLand = '#D3D3D3'
 var colorGraticule = '#0081C6'
 var colorCountry = '#ffff00' //Yellow
-// var PosCountry
-// var NegCountry 
 
-//
-// Handler
-//
-
-var rgbToHex = function (rgb) { 
-  var hex = Number(rgb).toString(16);
-  if (hex.length < 2) {
-       hex = "0" + hex;
-  }
-  return hex;
-};
-
-
-var fullColorHex = function(r,g,b) {   
-  var red = rgbToHex(r);
-  var green = rgbToHex(g);
-  var blue = rgbToHex(b);
-  return red+green+blue;
-};
 
 
 function enter(country) {
@@ -75,44 +54,6 @@ function color_single_country(countryName, color){
     }
   });
 
-}
-
-function toInteger(number){ 
-  return Math.round(  // round to nearest integer
-    Number(number)    // type cast your input
-  ); 
-};
-
-/**
- * Converts an HSV color value to RGB. Conversion formula
- * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
- * Assumes h, s, and v are contained in the set [0, 1] and
- * returns r, g, and b in the set [0, 255].
- *
- * @param   Number  h       The hue
- * @param   Number  s       The saturation
- * @param   Number  v       The value
- * @return  Array           The RGB representation
- */
-function hsvToRgb(h, s, v){
-    var r, g, b;
-
-    var i = Math.floor(h * 6);
-    var f = h * 6 - i;
-    var p = v * (1 - s);
-    var q = v * (1 - f * s);
-    var t = v * (1 - (1 - f) * s);
-
-    switch(i % 6){
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-
-    return [r * 255, g * 255, b * 255];
 }
 
 
@@ -156,28 +97,7 @@ function processSensitivity(sensitivity){
   // return hsvToRgb(sensitivity, 0.8, 1);
 }
 
-// var twitter_out = 
-// { "data" : [
-//   { "name" : "Australia",
-//     "sensitivity" : 0.56
-//   },
-//   { "name" : "United States",
-//     "sensitivity" : 1
-//   },
-//   { "name" : "Honduras",
-//     "sensitivity" : -0.56
-//   },
-//   { "name" : "Congo",
-//     "sensitivity" : 0.36
-//   },
-//   { "name" : "Sri Lanka",
-//     "sensitivity" : 0
-//   },
-//   { "name" : "United Kingdom",
-//     "sensitivity" : 0.26
-//   },
-// ]
-// }
+/* Test Input
 
 var twitter_out1 = [{
     "country": "Spain",
@@ -213,7 +133,7 @@ var twitter_out1 = [{
     "averageSentiment" : 0.36
   }
 ]
-
+*/
 
 function color_all_countries(twitter_out){
   //Process twitter feed
@@ -236,38 +156,16 @@ function color_all_countries(twitter_out){
 }
 
 setInterval(function() {
-    // $.ajax( "/countries", function( data ) {
-    //   console.log(data);
-    // });
 
-    // Assign handlers immediately after making the request,
-// and remember the jqXHR object for this request
-$.ajax({
-  url: '/countries',
-  type: 'GET'
-}).done(function(data){
+  $.ajax({
+    url: '/countries',
+    type: 'GET'
+  }).done(function(data){
 
-color_all_countries(JSON.parse(data))
+  color_all_countries(JSON.parse(data))
 
-
-// if (events.length != 0) {
-//   renderEvents(events, callback);
-//   var lastEventISOString= events[events.length-1].start_time;
-//   lastEventTimeArr = getTimeArray(lastEventISOString);
-// }
-
-});
-    // .always(function() {
-    //   alert( "complete" );
-    // });
-
-    // Perform other work here ...
-
-    // // Set another completion function for the request above
-    // jqxhr.always(function() {
-    // alert( "second complete" );
-    // });
-    //console.log("Australia")
+  });
+    
 }, 60 * 100); // 60 * 1000 milsec
 
 
@@ -364,12 +262,7 @@ function render() {
   }
 }
 
-function changeOpacity(obj){
-  // context.beginPath()
-  // path(obj)
-  // context.style.opacity = 0.15
-  // element.style.filter  = 'alpha(opacity=90)';
-}
+
 function fill(obj, color) {
   context.beginPath()
   path(obj)
@@ -441,9 +334,7 @@ function mousemove() {
   }
  // console.log(currentCountry)
   currentCountry = c
-  // console.log(currentCountry)
-  // console.log("bals")
-  changeOpacity(currentCountry);
+
   render()
   enter(c)
 }
