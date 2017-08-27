@@ -5,9 +5,6 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from threading import Thread
 import asyncio
 import time
-import sys
-
-sys.path.append('../redis')
 from dataIO import *
 
 # File contains helper functions for the processing of tweet text
@@ -18,19 +15,18 @@ class TweetProcessor(Thread):
     :param sleep_time how long should i sleep between iterations
     """
     def __init__(self, in_queue: queue.Queue, control_queue: queue.Queue, sleep_time: int):
+        print("thread init")
         self.in_queue = in_queue
         self.control_queue = control_queue
-        self.sleep_time = sleep_time
-        
         self.analyzer = SentimentIntensityAnalyzer()
     
     def run(self):
-        print("Run")
+        self.update_kv_store("imalive", 1.0)
         while True:
             try:
                 if(self.control_queue.get_nowait() == "stop"):
                     return
-            except asyncio.QueueEmpty:
+            except Exception:
                 print("Process")
                 val = self.in_queue.get(timeout=30)
                 self.processTweetText(self, val)
@@ -60,11 +56,11 @@ class TweetProcessor(Thread):
 
                     # Write to store
         except KeyError:
+            self.update_kv_store("Nomansland", -1)
             pass
 
 
-    def update_kv_store(self, country: str, sentiment_value: float):
-        print("update kv store %s %f" % (country, sentiment_value))
+    def update_kv_store(self, country, sentiment_value):
         setCountryStats(country, sentiment_value)
     
     def removeNoise(self, tweet_text):

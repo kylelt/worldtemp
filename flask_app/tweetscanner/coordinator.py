@@ -1,9 +1,10 @@
 from threading import Thread
+import threading
 from preprocessing import TweetProcessor
 import queue
 
 class TweetCoordinator(Thread):
-    def __init__(self, queue_len=10000, worker_threads=2, worker_sleep_time_sec=0.2):
+    def __init__(self, queue_len=10000, worker_threads=1, worker_sleep_time_sec=0.2):
         self.in_queue = queue.Queue(queue_len)
         self.worker_threads = worker_threads
         self.worker_sleep_time_sec = worker_sleep_time_sec
@@ -17,8 +18,11 @@ class TweetCoordinator(Thread):
         except Exception:
             print("queue put failed")
 
-
+    def show_thread_count(self):
+        print(threading.active_count())
+        
     def start_work(self):
+        print("starting workers")
         self.working = True
         for i in range(self.worker_threads):
             control_queue = queue.Queue(1)
@@ -28,6 +32,7 @@ class TweetCoordinator(Thread):
             worker.start()
 
     def stop_work(self):
+        print("stopping work")
         """ Send a lets stop message to everybody """ 
         for i in self.workers:
             i['state_control_queue'].put('stop')
