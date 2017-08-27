@@ -14,13 +14,15 @@ var angles = { x: -20, y: 40, z: 0}
 var colorWater = '#0081C6'
 var colorLand = '#D3D3D3'
 var colorGraticule = '#0081C6'
-var colorCountry = '#ffff00' //Yellow
+var colorCountry = '#ff39e7' //Yellow
 
 
 
 function enter(country) {
   var country = countryList.find(function(c) {
-    return c.id === country.id
+    if (c != undefined && c.feature != undefined) {
+      return c.feature.id === country.id
+    }
   })
 
   // var countryId = countryList.find(function(c){
@@ -31,10 +33,16 @@ function enter(country) {
   // console.log(feature)
   // fill(feature, colorCountry)
 
-  current.text(country && country.name || '')
+  
   // console.log(country)
-  sentiment_h.text(country.sentiment)
-  tweets_h.text(country.tweetCount + " tweets" );
+  if (country != undefined) {
+    current.text(country && country.name || '')
+    sentiment_h.text(country.sentiment) 
+    tweets_h.text(country.tweetCount + " tweets" );
+  } else {
+    leave(currentCountry);
+  }
+  
 }
 
 function leave(country) {
@@ -80,7 +88,6 @@ var getColorForPercentage = function(pct) {
         b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
     };
     return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
-    // or output as hex if preferred
 }  
 
 
@@ -98,6 +105,177 @@ function processSensitivity(sensitivity){
 }
 
 /* Test Input
+
+var twitter_out1 = [{
+    "country": "Spain",
+    "averageSentiment": 1.0
+  },
+  {
+    "country": "Australia",
+    "averageSentiment": -1.0
+  },
+  {
+    "country": "New Zealand",
+    "averageSentiment": 0.0
+  },
+  { "country" : "United States",
+    "averageSentiment" : 1
+  },
+  { "country" : "Honduras",
+    "averageSentiment" : -0.56
+  },
+  { "country" : "Congo",
+    "averageSentiment" : 0.36
+  },
+  { "country" : "Sri Lanka",
+    "averageSentiment" : 0
+  },
+  { "country" : "United Kingdom",
+    "averageSentiment" : 0.26
+  },
+  { "country" : "Iran",
+    "averageSentiment" : -0.22
+  },
+  { "country" : "Brazil",
+    "averageSentiment" : 0.36
+  }
+]
+*/
+
+function color_all_countries(twitter_out){
+  //Process twitter feed
+  twitter_out.forEach(function(twit_obj){
+     // console.log(twit_obj)
+    //Find country in countryList
+    countryList.forEach(function(countryObj){
+      if (countryObj.name === twit_obj.country) {
+        // console.log(countryObj)
+        var country_rgb = processSensitivity(twit_obj.averageSentiment);
+        // countryObj.color =  processSensitivity(twit_obj.averageSentiment);
+        // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
+        countryObj.sentiment = (twit_obj.averageSentiment).toFixed(4);
+        countryObj.tweetCount = twit_obj.count;
+        countryObj.color = processSensitivity(twit_obj.averageSentiment);
+      }
+    });
+
+  })
+}
+
+setInterval(function() {
+
+  $.ajax({
+    url: '/countries',
+    type: 'GET'
+  }).done(function(data){
+
+  color_all_countries(JSON.parse(data))
+
+  });
+    
+}, 60 * 100); // 60 * 1000 milsec
+
+
+//
+// Variables
+//
+
+var current = d3.select('#current')
+var sentiment_h = d3.select('#sentiment_h')
+var tweets_h = d3.select('#tweets_h')
+var canvas = d3.select('#globe')
+var context = canvas.node().getContext('2d')
+var water = {type: 'Sphere'}
+var projection = d3.geoOrthographic().precision(0.1)
+var graticule = d3.geoGraticule10()
+var path = d3.geoPath(projection).context(context)
+var v0 // Mouse position in Cartesian coordinates at start of drag gesture.
+var r0 // Projection rotation as Euler angles at start.
+var q0 // Projection rotation as versor at start.
+var lastTime = d3.now()
+var degPerMs = degPerSec / 1000
+var width, height
+var land, countries
+var countryList = []
+var autorotate, now, diff, roation
+var currentCountry
+
+//
+// Functions
+//
+
+function setAngles() {
+  var rotation = projection.rotate()
+  rotation[0] = angles.y
+  rotation[1] = angles.x
+  rotation[2] = angles.z
+  projection.rotate(rotation)
+}
+
+function scale() {
+  width = document.documentElement.clientWidth
+  height = document.documentElement.clientHeight
+  canvas.attr('width', width).attr('height', height)
+  projection
+    .scale((scaleFactor * Math.min(width, height)) / 2)
+    .translate([width / 2, height / 2])
+  render()
+}
+
+function startRotation(delay) {
+  autorotate.restart(rotate, delay || 0)
+}
+
+function stopRotation() {
+  autorotate.stop()
+}
+
+function dragstarted() {
+  v0 = versor.cartesian(projection.invert(d3.mouse(this)))
+  r0 = projection.rotate()
+  q0 = versor(r0)
+  stopRotation()
+}
+
+function dragged() {
+  var v1 = versor.cartesian(projection.rotate(r0).invert(d3.mouse(this)))
+  var q1 = versor.multiply(q0, versor.delta(v0, v1))
+  var r1 = versor.rotation(q1)
+  projection.rotate(r1)
+  render()
+}
+
+function dragended() {
+  startRotation(rotationDelay)
+}
+
+function render() {
+  context.clearRect(0, 0, width, height)
+  fill(water, colorWater)
+  stroke(graticule, colorGraticule)
+  fill(land, colorLand)
+
+  countryList.forEach(function(countryObj) {
+    if (countryObj.color === '#000000') {
+      
+    } else {
+      fill(countryObj.feature, countryObj.color)
+    }
+  });
+
+
+  if (currentCountry) {
+    fill(currentCountry, colorCountry)
+  }
+}
+
+
+function fill(obj, color) {
+  context.beginPath()
+  path(obj)
+  context.fillStyle = color
+  context.fill()
+}/* Test Input
 
 var twitter_out1 = [{
     "country": "Spain",
@@ -335,8 +513,9 @@ function mousemove() {
  // console.log(currentCountry)
   currentCountry = c
 
-  render()
   enter(c)
+  render()
+  
 }
 
 
