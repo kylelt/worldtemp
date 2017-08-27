@@ -66,7 +66,7 @@ function color_single_country(countryName, color){
   countryList.forEach(function(countryObj) {
     if (countryObj.name === countryName) {
       countryObj.color = colorCountry;
-      break
+     // break
     }
   });
 
@@ -174,8 +174,7 @@ function processSensitivity(sensitivity){
 // ]
 // }
 
-var twitter_out = {
-"countries": [{
+var twitter_out1 = [{
     "country": "Spain",
     "averageSentiment": 1.0
   },
@@ -207,10 +206,9 @@ var twitter_out = {
   },
   { "country" : "Brazil",
     "averageSentiment" : 0.36
-  },
-
+  }
 ]
-}
+
 
 function color_all_countries(twitter_out){
   //Process twitter feed
@@ -231,9 +229,37 @@ function color_all_countries(twitter_out){
 }
 
 setInterval(function() {
-    // color_all_countries(twitter_out.countries)
-    $.getJSON( "/country", function( data ) {
-    });
+    // $.ajax( "/countries", function( data ) {
+    //   console.log(data);
+    // });
+
+    // Assign handlers immediately after making the request,
+// and remember the jqXHR object for this request
+$.ajax({
+  url: '/countries',
+  type: 'GET'
+}).done(function(data){
+
+color_all_countries(JSON.parse(data))
+
+
+// if (events.length != 0) {
+//   renderEvents(events, callback);
+//   var lastEventISOString= events[events.length-1].start_time;
+//   lastEventTimeArr = getTimeArray(lastEventISOString);
+// }
+
+});
+    // .always(function() {
+    //   alert( "complete" );
+    // });
+
+    // Perform other work here ...
+
+    // // Set another completion function for the request above
+    // jqxhr.always(function() {
+    // alert( "second complete" );
+    // });
     //console.log("Australia")
 }, 60 * 100); // 60 * 1000 milsec
 
@@ -460,7 +486,7 @@ loadData(function(world, cList) {
                     });
   });
 
-  color_all_countries(twitter_out.countries)
+  // color_all_countries(twitter_out1)
   window.addEventListener('resize', scale)
   scale()
   autorotate = d3.timer(rotate)

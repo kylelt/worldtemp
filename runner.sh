@@ -5,7 +5,7 @@ fi
 
 export FLASK_APP='./app.py'
 
-( cd ./flask_app/tweetscanner && python ./startream.py & )
+( cd ./flask_app/tweetscanner && python ./startstream.py & )
 ( cd ./flask_app && flask run )
 
 

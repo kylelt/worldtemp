@@ -2,6 +2,7 @@ from get_country import CountryMapper
 import json
 from tweetscanner import dataIO
 from flask import Flask, render_template
+# import tweetscanner.startstream
 
 app = Flask(__name__)
 countryMapping = CountryMapper()
