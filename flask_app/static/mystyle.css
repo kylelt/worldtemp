@@ -23,11 +23,20 @@ h1{
   margin-top: 8%;
 }
 
-#tweetprop {
+#sentiment_h {
   position: absolute;
   color: white;
   font-family: sans-serif;
   margin-left: 4%;
-  margin-top: 4%;
+  margin-top: 12%;
 }
+
+#tweets_h{
+  position: absolute;
+  color: white;
+  font-family: sans-serif;
+  margin-left: 4%;
+  margin-top: 16%;
+}
+
 

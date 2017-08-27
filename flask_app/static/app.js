@@ -53,10 +53,15 @@ function enter(country) {
   // fill(feature, colorCountry)
 
   current.text(country && country.name || '')
+  // console.log(country)
+  sentiment_h.text(country.sentiment)
+  tweets_h.text(country.tweetCount + " tweets" );
 }
 
 function leave(country) {
   current.text('')
+  sentiment_h.text('')
+  tweets_h.text('')
 }
 
 
@@ -221,6 +226,8 @@ function color_all_countries(twitter_out){
         var country_rgb = processSensitivity(twit_obj.averageSentiment);
         // countryObj.color =  processSensitivity(twit_obj.averageSentiment);
         // countryObj.color = "rgb(" + country_rgb[0].toString() + "," + country_rgb[1].toString() + "," + country_rgb[2].toString() + ")";
+        countryObj.sentiment = (twit_obj.averageSentiment).toFixed(4);
+        countryObj.tweetCount = twit_obj.count;
         countryObj.color = processSensitivity(twit_obj.averageSentiment);
       }
     });
@@ -268,7 +275,9 @@ color_all_countries(JSON.parse(data))
 // Variables
 //
 
-var current = d3.select('#current') 
+var current = d3.select('#current')
+var sentiment_h = d3.select('#sentiment_h')
+var tweets_h = d3.select('#tweets_h')
 var canvas = d3.select('#globe')
 var context = canvas.node().getContext('2d')
 var water = {type: 'Sphere'}
@@ -482,7 +491,9 @@ loadData(function(world, cList) {
     countryList.push({name: obj.name,
                       id: obj.id, 
                       color: '#000000',
-                      feature: countries.features.find(function(f){return parseInt(f.id) === parseInt(obj.id)})
+                      feature: countries.features.find(function(f){return parseInt(f.id) === parseInt(obj.id)}),
+                      tweetCount: 0,
+                      sentiment: 'N/A'
                     });
   });
 
