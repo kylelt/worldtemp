@@ -2,63 +2,68 @@ import re
 import queue
 from fileio import writeCSVFile
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from threading import Thread
+from multiprocessing import Process, Queue
 import asyncio
 import time
+import sys
 from dataIO import *
 
 # File contains helper functions for the processing of tweet text
-class TweetProcessor(Thread):
+class TweetProcessor(Process):
     """
     :param in_queue the queue in which the tweets will appear
     :param control_queue the queue in which any sentinal messages will come through
     :param sleep_time how long should i sleep between iterations
     """
-    def __init__(self, in_queue: queue.Queue, control_queue: queue.Queue, sleep_time: int):
+    def __init__(self, in_queue: Queue, sleep_time: int, sent):
+        super().__init__()
         print("thread init")
         self.in_queue = in_queue
-        self.control_queue = control_queue
+        self.sleep_time = sleep_time
         self.analyzer = SentimentIntensityAnalyzer()
+        self.sent = sent
     
     def run(self):
-        self.update_kv_store("imalive", 1.0)
-        while True:
-            try:
-                if(self.control_queue.get_nowait() == "stop"):
-                    return
-            except Exception:
-                print("Process")
+        while self.sent.is_running():
                 val = self.in_queue.get(timeout=30)
-                self.processTweetText(self, val)
+                self.processTweetText(val)
                 time.sleep(self.sleep_time)     
 
     def processTweetText(self, tweet):
+
         """ Processes the tweet """
         try:
             # Dump any tweets that don't have the fields we want because we cannot
             # classify those tweets
 
-            if decodedData['text']:
+            if tweet['text']:
                 retweeted = tweet['retweeted']
                 
                 if(tweet['user'] != None and retweeted == False):
                     tweet_location = tweet['place']['country']
+                    
+                    # Some locations are wierd unicode ... lets drop them
+                    tweet_location = tweet_location.encode('ascii', 'ignore').decode('utf-8')
+                    if(len(self.removeNoise(tweet_location)) == 0):
+                        return
+
                     tweet_text = tweet['text'].encode('ascii', 'ignore').decode('utf-8')
-	            # Removes reply, email, hashtags and newline segments
+	                # Removes reply, email, hashtags and newline segments
                     filtered = self.removeNoise(tweet_text) 
                     # Correct Spacing
                     correctedSpacing = self.correctSpacing(filtered)
                     # Convert all letters to lower case
                     lowerCase = correctedSpacing.lower()
-	            # Sentiment Analysis
+	                # Sentiment Analysis
                     vs = self.analyzer.polarity_scores(lowerCase)['compound']
                     self.update_kv_store(tweet_location, vs)
 
                     # Write to store
         except KeyError:
-            self.update_kv_store("Nomansland", -1)
             pass
-
+        except:
+            raise
+            self.join()
 
     def update_kv_store(self, country, sentiment_value):
         setCountryStats(country, sentiment_value)
@@ -66,7 +71,7 @@ class TweetProcessor(Thread):
     def removeNoise(self, tweet_text):
         """ Removes reply, weblinks, hashtags and newline segments
         """
-	# Remove twitter weblinks
+	   # Remove twitter weblinks
         sub_weblinks = re.sub(r'https?:\/\/\S+', '', tweet_text)
 
 	# Replacing '\n' symbols with single spaces

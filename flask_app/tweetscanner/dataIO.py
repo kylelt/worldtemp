@@ -35,9 +35,11 @@ def getAllCountryObjectsJSON():
     for country in redis_db.scan_iter("*"):
         # do something with the key
         countryName = country.decode('utf-8')
+        count = int(getCountryStats(countryName)['count'])
         avgSentiment = getCountrySentiment(countryName)
         allCountries.append({'country': countryName, \
-                             'averageSentiment': avgSentiment})
+                             'averageSentiment': avgSentiment,
+                             'count': count})
 
     return json.dumps(allCountries)
 

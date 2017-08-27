@@ -1,43 +1,46 @@
 from threading import Thread
 import threading
 from preprocessing import TweetProcessor
-import queue
+import logging
+from multiprocessing import Process, Queue
 
-class TweetCoordinator(Thread):
-    def __init__(self, queue_len=10000, worker_threads=1, worker_sleep_time_sec=0.2):
-        self.in_queue = queue.Queue(queue_len)
+class TweetCoordinator:
+    def __init__(self, queue_len=10000, worker_threads=4, worker_sleep_time_sec=0.1):
+        self.in_queue = Queue(queue_len)
         self.worker_threads = worker_threads
         self.worker_sleep_time_sec = worker_sleep_time_sec
         self.workers = []
-        print("coord start up")
         self.working = False
+        self.sent = Sentinel()
 
     def put_tweet(self, tweet):
         try:
             self.in_queue.put(tweet)
         except Exception:
             print("queue put failed")
+            self.stop_work()
 
     def show_thread_count(self):
         print(threading.active_count())
-        
+
     def start_work(self):
         print("starting workers")
         self.working = True
         for i in range(self.worker_threads):
-            control_queue = queue.Queue(1)
-            worker = Thread(target=TweetProcessor, args=(self.in_queue, control_queue, self.worker_sleep_time_sec))
-            self.workers.append({'thread': worker, 'state_control_queue': control_queue})
-            print("start worker")
+            control_queue = Queue(1)
+            worker= TweetProcessor(self.in_queue, self.worker_sleep_time_sec, self.sent)
             worker.start()
 
     def stop_work(self):
-        print("stopping work")
-        """ Send a lets stop message to everybody """ 
-        for i in self.workers:
-            i['state_control_queue'].put('stop')
-        
-        for i in self.workers:
-            i['thread'].join(i)
+        print("stopping workers")
+        self.sent.stop()
 
-        self.working = False
+class Sentinel():
+    def __init__(self):
+        self.run_thread = True
+
+    def is_running(self):
+        return self.is_running
+
+    def stop(self):
+        self.is_running = False

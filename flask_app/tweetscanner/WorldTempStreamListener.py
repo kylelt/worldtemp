@@ -8,7 +8,8 @@ class WorldTempStreamListener(StreamListener):
 """
 
     def __init__(self, controller=None):
-        self.controller = TweetCoordinator()
+        super().__init__()
+        self.controller = controller
         self.debugCount = 0
 
     def on_status(self, status):
@@ -35,5 +36,4 @@ class WorldTempStreamListener(StreamListener):
         decodedData = json.loads(data)
         self.controller.put_tweet(decodedData)
         if not self.controller.working:
-            print("Starting work")
             self.controller.start_work()

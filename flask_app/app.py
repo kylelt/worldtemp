@@ -1,5 +1,6 @@
 from get_country import CountryMapper
 import json
+from tweetscanner import dataIO
 from flask import Flask, render_template
 
 app = Flask(__name__)
@@ -15,4 +16,4 @@ def get_country_of_city(city):
 
 @app.route('/countries')
 def get_countries():
-    pass
+    return dataIO.getAllCountryObjectsJSON()
