@@ -3,7 +3,6 @@ from tweepy import StreamListener
 from coordinator import TweetCoordinator
 import json
 
-
 # Stream listener for receiving data
 class WorldTempStreamListener(StreamListener):
     """ A listener handles tweets that are received from the stream.
@@ -26,6 +25,8 @@ class WorldTempStreamListener(StreamListener):
         """ 
         Decodes the received data and prints it out in a desired format
         """
-        self.controller.put_tweet(data)
+        decodedData = json.loads(data)
+        print(decodedData['text'])
+        self.controller.put_tweet(decodedData)
         if not self.controller.working:
             self.controller.start_work()

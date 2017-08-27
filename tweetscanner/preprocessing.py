@@ -5,6 +5,11 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from threading import Thread
 import asyncio
 import time
+import sys
+
+sys.path.append('../redis')
+from dataIO import *
+
 # File contains helper functions for the processing of tweet text
 class TweetProcessor(Thread):
     """
@@ -41,7 +46,7 @@ class TweetProcessor(Thread):
                 retweeted = tweet['retweeted']
                 
                 if(tweet['user'] != None and retweeted == False):
-                    user_location = tweet['place']['country']
+                    tweet_location = tweet['place']['country']
                     tweet_text = tweet['text'].encode('ascii', 'ignore').decode('utf-8')
 	            # Removes reply, email, hashtags and newline segments
                     filtered = self.removeNoise(tweet_text) 
@@ -51,7 +56,7 @@ class TweetProcessor(Thread):
                     lowerCase = correctedSpacing.lower()
 	            # Sentiment Analysis
                     vs = self.analyzer.polarity_scores(lowerCase)['compound']
-                    self.update_kv_store(user_location, vs)
+                    self.update_kv_store(tweet_location, vs)
 
                     # Write to store
         except KeyError:
@@ -60,6 +65,7 @@ class TweetProcessor(Thread):
 
     def update_kv_store(self, country: str, sentiment_value: float):
         print("update kv store %s %f" % (country, sentiment_value))
+        setCountryStats(country, sentiment_value)
     
     def removeNoise(self, tweet_text):
         """ Removes reply, weblinks, hashtags and newline segments

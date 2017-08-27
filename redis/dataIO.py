@@ -36,8 +36,8 @@ def getAllCountryObjectsJSON():
         # do something with the key
         countryName = country.decode('utf-8')
         avgSentiment = getCountrySentiment(countryName)
-        allCountries.append({ 'name': countryName, \
-                            'avgSentiment': avgSentiment})
+        allCountries.append({'country': countryName, \
+                             'averageSentiment': avgSentiment})
 
     return json.dumps(allCountries)
 
